@@ -77,7 +77,7 @@ product.forEach(function (e) {
 				<div class="item-header">${headline}</div>
 				<div class="item-img">
 					<div class="supply"><b>${name}</b>${supply} Day Supply</div>
-					<img src="${assetsPath}assets/main/products/img/${image}" alt="${bottles}">
+					<img src="${assetsPath}${image}" alt="${bottles}">
 				</div>
 				<div class="item-info">
 					<div class="price">

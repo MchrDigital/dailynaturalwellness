@@ -1,0 +1,278 @@
+<!DOCTYPE html><html lang="en" data-variant="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>Health</title><script>
+      (function () {
+        try {
+          // Macro NAO substituido ("{clickid}", "%7Bclickid%7D") nao e clickid: e lixo de
+          // uma URL que nao passou por quem deveria preencher. Aceitar isso envenena a
+          // cadeia inteira -- medido: virava cookie, postback e cid do checkout, e ainda
+          // fazia o universal script achar que ja tinha clickid e NAO chamar a campanha.
+          var real = function (v) { return v && v.trim() && !/[{}]|%7[bd]/i.test(v) ? v.trim() : null; };
+          var sp = new URLSearchParams(location.search);
+          if (real(sp.get('rtkcid'))) return;                 // campanha ja mandou: nao mexe
+          var keys = ['cid', 'rtkupdclickid', 'clickid', 'tid', 'subid'], id = null;
+          for (var i = 0; i < keys.length && !id; i++) id = real(sp.get(keys[i]));
+          if (!id) {                                          // reload sem params: usa o cookie
+            var m = document.cookie.match(/(?:^|; )rtkclickid-store=([^;]+)/);
+            if (m) id = decodeURIComponent(m[1]);
+          }
+          if (!id) return;                                    // sem clickid nao ha o que rastrear
+          sp.set('rtkcid', id);
+          history.replaceState(null, '', location.pathname + '?' + sp.toString() + location.hash);
+        } catch (e) {}
+      })();
+    </script><script>(function(){const PAGE_ID = "glz-hero-hw2";
+const VARIANTS = [{"id":"v1","weight":10},{"id":"v23g","weight":40},{"id":"v3g","weight":20},{"id":"v4","weight":20}];
+const SUB_PARAM = "sub17";
+const TEMPLATE_ID = "health-hw2";
+
+      (function () {
+        var KEY = '_v_' + PAGE_ID;
+        var TTL = 30 * 24 * 3600 * 1000;
+        var IDS = VARIANTS.map(function (v) { return v.id; });
+        var qs = new URLSearchParams(location.search);
+        var chosen;
+
+        // sorteio PONDERADO pelos pesos definidos no HTML
+        function weightedPick() {
+          var total = 0, i;
+          for (i = 0; i < VARIANTS.length; i++) total += VARIANTS[i].weight > 0 ? VARIANTS[i].weight : 0;
+          if (total <= 0) return IDS[0];
+          var r = Math.random() * total, acc = 0;
+          for (i = 0; i < VARIANTS.length; i++) {
+            acc += VARIANTS[i].weight > 0 ? VARIANTS[i].weight : 0;
+            if (r < acc) return VARIANTS[i].id;
+          }
+          return IDS[IDS.length - 1];
+        }
+
+        // 1. QA override
+        var forced = qs.get('force_template');
+        if (forced && IDS.indexOf(forced) >= 0) {
+          chosen = forced;
+        } else {
+          // 2. variante guardada (stickiness) - so se ainda existir na pagina (fallback se podada)
+          try {
+            var raw = localStorage.getItem(KEY);
+            if (raw) {
+              var o = JSON.parse(raw);
+              if (o && o.v && o.t && Date.now() - o.t < TTL && IDS.indexOf(o.v) >= 0) {
+                chosen = o.v;
+              }
+            }
+          } catch (e) {}
+          // 3. sorteio ponderado
+          if (!chosen) chosen = weightedPick();
+          try {
+            localStorage.setItem(KEY, JSON.stringify({ v: chosen, t: Date.now() }));
+          } catch (e) {}
+        }
+
+        document.documentElement.setAttribute('data-variant', chosen);
+
+        // identificador de atribuicao: <templateId>-<variante> (ex.: cbsnews-claude-light)
+        var attribution = TEMPLATE_ID ? (TEMPLATE_ID + '-' + chosen) : chosen;
+
+        // injeta template + sub na URL ANTES do VTurb registrar a view
+        try {
+          var sp = new URLSearchParams(location.search);
+          sp.set('template', attribution);
+          sp.set(SUB_PARAM, attribution);
+          history.replaceState(null, '', location.pathname + '?' + sp.toString() + location.hash);
+        } catch (e) {}
+
+        // expoe pra o tracker/CTA: __VARIANT__ = curto (CSS), __TEMPLATE__ = descritivo (atribuicao)
+        window.__VARIANT__ = chosen;
+        window.__TEMPLATE__ = attribution;
+      })();
+    })();</script><style>
+      html { --adp-lb: #ffffff; --adp-lt: #137fbe; }
+      html[data-variant='light'] { --adp-lb: #ffffff; --adp-lt: #137fbe; }
+      html[data-variant='dark'] { --adp-lb: #0a0f1a; --adp-lt: #2a9fe0; }
+      body { margin: 0; background: var(--adp-lb); }
+      #adp-loader { position: fixed; inset: 0; display: grid; place-items: center; background: var(--adp-lb); z-index: 99999; }
+      #adp-loader .sp { width: 42px; height: 42px; border: 4px solid rgba(127,127,127,.25); border-top-color: var(--adp-lt); border-radius: 50%; animation: adpspin .8s linear infinite; }
+      @keyframes adpspin { to { transform: rotate(360deg); } }
+      #adp-content { visibility: hidden; }
+      html.adp-ready #adp-loader { display: none; }
+      html.adp-ready #adp-content { visibility: visible; }
+      /* VTurb delay: elementos com .hide ficam ocultos ate o displayHiddenElements liberar no pitch */
+      .hide { display: none !important; }
+    </style><script>
+      (function () {
+        function ready() { document.documentElement.classList.add('adp-ready'); }
+        var href = '__TEMPLATE_CSS_URL__';
+        if (!href || href.slice(0, 10) === '__TEMPLATE') { ready(); return; } // dev/sem R2: Astro injeta o <link> proprio
+        var l = document.createElement('link');
+        l.rel = 'stylesheet';
+        l.href = href;
+        l.onload = ready;
+        l.onerror = ready;
+        document.head.appendChild(l);
+        setTimeout(ready, 4000); // safety: nunca trava o usuario
+      })();
+    </script><style>:root,html[data-variant=light]{--page-bg: #ffffff;--surface: #ffffff;--text: #101828;--text-muted: #475467;--line: #d8dee7;--topline: #071426;--header-bg: #137fbe;--header-text: #ffffff;--accent-blue: #137fbe;--accent-blue-strong: #0b5cab;--accent-pink: #ff4eb8;--accent-red: #d9232e;--chip-bg: #eaf3ff;--chip-border: #cfe3ff;--chip-text: #0b5cab;--cue-bg: #fff7ed;--cue-border: #fed7aa;--cue-text: #9a3412;--cue-dot: #f97316;--avatar-a: #d9e7fb;--avatar-b: #ffffff;--avatar-border: #c4d7ef;--pill-bg: #e8f7f2;--pill-text: #087153;--pill-border: #b9e4d7;--pill-hot-bg: #fff1f1;--pill-hot-text: #b42318;--pill-hot-border: #fecaca;--meter-track: #e5e7eb}html[data-variant=dark]{--page-bg: #0a0f1a;--surface: #111827;--text: #e7ecf3;--text-muted: #9aa5b6;--line: #1f2a3a;--topline: #000000;--header-bg: #08243a;--header-text: #ffffff;--accent-blue: #2a9fe0;--accent-blue-strong: #7cc4ee;--accent-pink: #ff4eb8;--accent-red: #ef4444;--chip-bg: #0e2a40;--chip-border: #1c456b;--chip-text: #7cc4ee;--cue-bg: #3a2410;--cue-border: #7c4a1e;--cue-text: #fdba74;--cue-dot: #f97316;--avatar-a: #16314d;--avatar-b: #0c1a2b;--avatar-border: #1c456b;--pill-bg: #0e2a22;--pill-text: #34d399;--pill-border: #1c4a3a;--pill-hot-bg: #3a1414;--pill-hot-text: #fca5a5;--pill-hot-border: #7c2d2d;--meter-track: #1f2a3a}*{box-sizing:border-box}html,body{margin:0;padding:0}body{background:var(--page-bg);color:var(--text);font-family:Helvetica Neue,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;transition:background-color .2s ease}body{min-height:100vh;display:flex;flex-direction:column}#adp-content{flex:1 0 auto;display:flex;flex-direction:column}#adp-content:after{content:"";flex:1 0 0;order:998}#adp-content>.knv-footer-block{order:999}html,body{overflow-x:hidden}.knv-hero-video-block{background:var(--surface);width:100%;padding:6px 8px 4px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center}.knv-hero-video-inner{width:100%;max-width:420px}.knv-hero-video-inner vturb-smartplayer{display:block!important;margin:0 auto!important;width:100%!important;border-radius:10px;overflow:hidden;background:#050b16;-webkit-mask-image:-webkit-radial-gradient(white,black)}.knv-hero-cue-wrap{display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 8px 8px;flex-wrap:wrap}.knv-hero-cue-wrap .knv-video-title{display:inline-flex;align-items:center;font-size:11px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:var(--accent-blue-strong);background:var(--chip-bg);border:1px solid var(--chip-border);border-radius:999px;padding:7px 10px}.knv-hero-cue-wrap .knv-video-title:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent-red);margin-right:8px;box-shadow:0 0 0 4px #d9232e1f}.knv-hero-cue-wrap .knv-click-cue{display:inline-flex;align-items:center;gap:7px;background:var(--cue-bg);border:1px solid var(--cue-border);border-radius:999px;padding:8px 12px;color:var(--cue-text);font-size:13px;font-weight:900;white-space:nowrap;box-shadow:0 6px 16px #9a341214;animation:knvCueGlow 3.6s ease-in-out infinite;cursor:pointer}.knv-hero-cue-wrap .knv-play-dot{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--cue-dot);color:#fff;flex:0 0 18px}.knv-hero-cue-wrap .knv-play-dot svg{width:8px;height:9px;display:block;fill:currentColor}@keyframes knvCueGlow{0%,to{transform:translateY(0)}50%{transform:translateY(-1px)}}@media(max-width:800px){.knv-hero-video-block{padding:4px 8px 2px}.knv-hero-video-inner{max-width:none}.knv-hero-cue-wrap{padding:8px 6px 6px}.knv-hero-cue-wrap .knv-video-title{display:none}}html[data-variant=v1] .knv-comments{display:none!important}.knv-comments{max-width:640px;margin:6px auto 10px;padding:0 12px;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;color:var(--text);box-sizing:border-box}.knv-comments *{box-sizing:border-box}.knv-cm-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 2px 8px;border-bottom:1px solid var(--line)}.knv-cm-title{font-size:16px;font-weight:800}.knv-cm-title b{color:var(--text-muted);font-weight:700;font-size:13px}.knv-cm-live{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.02em;color:var(--accent-red);text-transform:uppercase}.knv-cm-livedot{width:7px;height:7px;border-radius:50%;background:var(--accent-red);animation:knvCmPulse 1.6s ease-in-out infinite}@keyframes knvCmPulse{0%,to{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}.knv-cm-list{padding:10px 2px 2px}.knv-cm-more{display:block;width:100%;margin:2px 0 10px;padding:11px 10px;background:var(--chip-bg);border:1px solid var(--chip-border);border-radius:10px;color:var(--accent-blue-strong);font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;text-align:center}.knv-c{display:flex;gap:8px;margin:0 0 12px}.knv-c.knv-c-new{animation:knvCIn .45s ease both}@keyframes knvCIn{0%{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}.knv-c-av{width:34px;height:34px;border-radius:50%;object-fit:cover;flex:0 0 34px;background:var(--chip-bg)}.knv-c-main{min-width:0;flex:1}.knv-c-bubble{display:inline-block;background:var(--chip-bg);border-radius:16px;padding:7px 12px 8px;max-width:100%}.knv-c-name{font-size:12.5px;font-weight:800;margin:0 0 1px;color:var(--text)}.knv-c-text{font-size:13.5px;line-height:1.3;margin:0;color:var(--text);word-wrap:break-word}.knv-c-meta{display:flex;align-items:center;gap:8px;padding:4px 12px 0;font-size:11.5px;color:var(--text-muted);font-weight:700}.knv-c-like{cursor:pointer;user-select:none}.knv-c-like.liked{color:var(--accent-blue-strong)}.knv-c-vt{color:var(--accent-blue-strong);font-weight:800;font-size:11px;white-space:nowrap}.knv-c-likes{display:inline-flex;align-items:center;gap:3px;margin-left:-4px;font-weight:700}.knv-c-likes:before{content:"👍";font-size:11px}.knv-c-rc{margin-left:-4px;font-weight:700}.knv-c-rc:empty{display:none}.knv-c-rc:before{content:"("}.knv-c-rc:after{content:")"}.knv-cm-close{display:block;width:100%;margin:-4px 0 10px;padding:8px;background:none;border:none;color:var(--text-muted);font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;text-align:center;text-decoration:underline;text-underline-offset:3px}.knv-c-replies{margin:8px 0 0 14px;padding-left:12px;border-left:2px solid var(--line)}.knv-c-replies .knv-c{margin-bottom:8px}.knv-c-replies .knv-c-av{width:28px;height:28px;flex:0 0 28px}.knv-cbubble{position:fixed;left:10px;bottom:14px;z-index:99990;display:flex;gap:8px;align-items:flex-start;max-width:min(78vw,340px);background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:9px 30px 9px 10px;box-shadow:0 10px 30px #00000029;animation:knvCbIn .4s ease both;font-family:Helvetica Neue,Helvetica,Arial,sans-serif}.knv-cbubble.out{animation:knvCbOut .3s ease both}@keyframes knvCbIn{0%{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}@keyframes knvCbOut{0%{opacity:1}to{opacity:0;transform:translateY(10px)}}.knv-cbubble img{width:30px;height:30px;border-radius:50%;object-fit:cover;flex:0 0 30px}.knv-cbubble .knv-cb-name{font-size:11.5px;font-weight:800;margin:0 0 1px;color:var(--text)}.knv-cbubble .knv-cb-text{font-size:12.5px;line-height:1.25;margin:0;color:var(--text);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.knv-cb-x{position:absolute;top:4px;right:6px;width:20px;height:20px;display:grid;place-items:center;color:var(--text-muted);font-size:14px;font-weight:800;cursor:pointer;line-height:1}.knv-postcta{max-width:760px;margin:6px auto 30px;padding:18px 16px 0;text-align:center;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;border-top:1px solid var(--line);box-sizing:border-box}.knv-postcta-row{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 18px}.knv-pc-badge{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:800;color:var(--text);white-space:nowrap}.knv-pc-badge svg{width:17px;height:17px;fill:var(--accent-blue-strong);flex:0 0 17px}.knv-postcta-note{margin:12px auto 0;max-width:560px;font-size:13px;line-height:1.5;color:var(--text-muted)}@media(max-width:520px){.knv-postcta{margin-bottom:24px;padding-top:16px}.knv-postcta-row{gap:8px 14px}.knv-pc-badge{font-size:11.5px}.knv-postcta-note{font-size:12px}}.knv-footer-block{background:var(--topline);color:var(--text-muted);text-align:center;padding:18px 16px;margin-top:60px;font:12px Helvetica Neue,Helvetica,Arial,sans-serif}.knv-footer-block b{color:#fff}
+.glz-hero-top{--glz-red: #b00000;--glz-ok: #1a7d4b;--glz-ok-bg: #eaf6ee;background:#fff;color:#101828;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;width:100%;overflow:hidden}.glz-hero-top *{box-sizing:border-box}.glz-brandbar{background:var(--glz-red);color:#fff;display:flex;align-items:center;justify-content:center;height:52px;padding:0 16px}.glz-brandbar .glz-logo{display:inline-flex;align-items:center;gap:9px}.glz-brandbar .glz-ekg{width:26px;height:26px;display:block}.glz-brandbar .glz-brand{font-family:Georgia,Times New Roman,Times,serif;font-weight:700;font-size:28px;letter-spacing:.14em}.glz-seal{display:flex;align-items:center;justify-content:center;gap:6px;background:var(--glz-ok-bg);color:var(--glz-ok);padding:7px 12px;font-size:11px;font-weight:800;letter-spacing:.05em;text-align:center}.glz-seal .glz-check{width:14px;height:14px;flex:0 0 14px}.glz-article-shell{max-width:900px;margin:0 auto;padding:16px 16px 4px;text-align:center}.glz-byline{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-size:13px;color:#6b7280;margin-bottom:12px}.glz-byline .glz-author{font-weight:800;color:var(--glz-red)}.glz-byline .glz-sep{opacity:.5}.glz-headline.glz-hl-faith,html[data-variant=v3g] .glz-headline.glz-hl-default,html[data-variant=v4] .glz-headline.glz-hl-default{display:none}html[data-variant=v3g] .glz-headline.glz-hl-faith,html[data-variant=v4] .glz-headline.glz-hl-faith{display:flex}.glz-headline{font-family:Georgia,Times New Roman,Times,serif;margin:0;line-height:1.08;letter-spacing:-.02em;color:#101828;display:flex;flex-direction:column;gap:6px;align-items:center}.glz-headline .glz-hl-red{color:var(--glz-red);font-weight:900;font-size:clamp(26px,4.2vw,46px)}.glz-headline .glz-hl-main{font-weight:700;font-size:clamp(20px,3vw,32px);max-width:780px}.glz-headline .glz-hl-main strong{color:var(--glz-red);font-weight:900}@media(min-width:801px){.knv-hero-video-block .knv-hero-video-inner{max-width:540px}}@media(max-width:800px){.glz-brandbar{height:44px}.glz-brandbar .glz-brand{font-size:22px}.glz-brandbar .glz-ekg{width:21px;height:21px}.glz-seal{font-size:9px;letter-spacing:.03em;gap:5px;padding:6px 10px}.glz-seal .glz-check{width:12px;height:12px;flex:0 0 12px}.glz-article-shell{padding:12px 12px 2px}.glz-byline{font-size:11.5px;gap:6px;margin-bottom:9px}.glz-headline .glz-hl-red{font-size:22px}.glz-headline .glz-hl-main{font-size:17px}}.glz-claim{width:100%;margin:30px 0 28px;padding:24px 16px 26px;text-align:center;background:var(--surface);border-top:3px solid var(--accent-red);border-bottom:3px solid var(--accent-red);font-family:Helvetica Neue,Helvetica,Arial,sans-serif;box-sizing:border-box}.glz-claim-inner{max-width:660px;margin:0 auto}.glz-claim-badge{display:flex;align-items:center;justify-content:center;gap:9px;font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-red)}.glz-claim-badge:before,.glz-claim-badge:after{content:"";flex:1;height:1px;max-width:110px;background:var(--accent-red);opacity:.35}.glz-claim-dot{width:7px;height:7px;border-radius:50%;background:var(--accent-red);flex:0 0 auto;box-shadow:0 0 0 4px #d9232e1f;animation:glzPulse 3.4s infinite}@keyframes glzPulse{0%,to{transform:scale(1);opacity:1}50%{transform:scale(.74);opacity:.68}}.glz-claim-text{margin:14px 0 4px;font-family:Georgia,Times New Roman,Times,serif;font-size:20px;line-height:1.3;color:var(--text);font-weight:700;letter-spacing:-.01em}.glz-claim-timer-src{display:none}.glz-cd{display:inline-flex;align-items:flex-start;justify-content:center;gap:10px;margin:12px 0 4px}.glz-cd-box{display:inline-flex;flex-direction:column;align-items:center;background:#141414;border-radius:12px;padding:12px 8px 8px;min-width:78px;box-shadow:0 8px 20px #b0000047,inset 0 1px #ffffff0f;border:1px solid rgba(255,255,255,.06)}.glz-cd-num{font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:40px;font-weight:800;line-height:1;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:.01em}.glz-cd-lbl{margin-top:6px;font-size:10px;font-weight:800;letter-spacing:.18em;color:#ff6a6a}.glz-cd-colon{font-size:34px;font-weight:800;color:var(--accent-red);line-height:1.35;animation:glzColon 1s steps(1) infinite}@keyframes glzColon{0%,49%{opacity:1}50%,to{opacity:.25}}.glz-cd-box.glz-cd-tick .glz-cd-num{animation:glzTick .35s ease}@keyframes glzTick{0%{transform:translateY(-3px);opacity:.6}to{transform:translateY(0);opacity:1}}.glz-claim-guarantee{margin:14px auto 0;max-width:560px;font-size:14px;line-height:1.5;color:var(--text-muted)}.glz-claim-guarantee b{color:var(--text);font-weight:800}@media(prefers-reduced-motion:reduce){.glz-cd-colon,.glz-cd-box.glz-cd-tick .glz-cd-num,.glz-claim-dot{animation:none!important}}@media(max-width:520px){.glz-claim{margin:24px 0 22px;padding:20px 14px 22px}.glz-claim-badge:before,.glz-claim-badge:after{max-width:48px}.glz-claim-text{font-size:17px}.glz-cd-box{min-width:66px;padding:10px 6px 7px}.glz-cd-num{font-size:33px}.glz-cd-colon{font-size:28px}.glz-claim-guarantee{font-size:13px}}
+#pote.hide{display:none}.knv-cta-block{padding:8px 10px 40px}#pote .item-buy .button{border-radius:999px!important;font-weight:800!important;letter-spacing:.03em!important;border:0!important;transition:transform .15s ease,box-shadow .2s ease,filter .15s ease!important}#pote .item-buy .button span:after{content:" →";font-weight:900}#pote .item-buy .button:hover{transform:translateY(-2px) scale(1.015)!important;filter:brightness(1.04)!important}#pote .item-buy .button:active{transform:translateY(0) scale(.99)!important}#pote .buylink:not(.kit3) .item-buy .button{background:linear-gradient(180deg,#2ec06a,#1a8a4a)!important;color:#fff!important;box-shadow:0 6px 16px #1a8a4a57!important}#pote .buylink.kit3 .item-buy .button{background:linear-gradient(180deg,#ffd21a,#ff9e00)!important;color:#3a2600!important;box-shadow:0 8px 22px #ff9e0080!important;animation:glzCtaPulse 1.8s ease-in-out infinite!important}@keyframes glzCtaPulse{0%,to{box-shadow:0 8px 22px #ff9e0080}50%{box-shadow:0 10px 30px #ff9e00d9}}@media(prefers-reduced-motion:reduce){#pote .buylink.kit3 .item-buy .button{animation:none!important}}#pote .buylink:not(.kit3) .item-header{background:#0e46a3!important;color:#fff!important}
+.glz-escada-gate{display:none}html[data-variant=v4] .glz-escada-gate{display:block}.glz-escada{font-family:Helvetica Neue,Helvetica,Arial,sans-serif;color:var(--text);box-sizing:border-box}.glz-escada *{box-sizing:border-box}.glz-esc-inner{max-width:760px;margin:0 auto;padding:0 16px}.glz-escada h2{font-family:Georgia,Times New Roman,Times,serif;font-size:clamp(21px,3.4vw,28px);line-height:1.2;margin:0 0 14px;text-align:center;color:var(--text)}.glz-esc-guarantee{padding:30px 0 26px;text-align:center;background:var(--surface)}.glz-esc-seal{width:74px;height:74px;margin:0 auto 12px}.glz-esc-seal svg{width:74px;height:74px;fill:#1a7d4b}.glz-esc-lead{font-size:16px;font-weight:900;color:#1a7d4b;margin:0 0 10px;letter-spacing:.02em}.glz-esc-guarantee p{font-size:15px;line-height:1.6;color:var(--text-muted);margin:0 auto;max-width:600px}.glz-esc-guarantee b{color:var(--text)}.glz-esc-guarantee-2{border-top:1px solid var(--line)}.glz-esc-ship{padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.glz-esc-ship-row{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 26px;font-size:13px;color:var(--text-muted);text-align:center}.glz-esc-ship-row b{color:var(--text)}.glz-esc-reviews{padding:30px 0 6px}.glz-rev{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;margin:0 0 14px}.glz-rev-head{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px}.glz-rev-face{width:52px;height:52px;border-radius:50%;object-fit:cover;flex:0 0 52px}.glz-rev-name{font-size:15px;font-weight:800}.glz-rev-city{font-weight:400;color:var(--text-muted);font-size:13px}.glz-rev-stars{color:#f5a623;font-size:14px;letter-spacing:1px;margin:2px 0}.glz-rev-buy{font-size:12px;font-weight:700;color:#1a7d4b}.glz-rev-text{margin:0;font-size:14.5px;line-height:1.6;color:var(--text)}.glz-esc-cta{padding:26px 0 30px}.glz-esc-cta-title{margin-bottom:18px}.glz-esc-cta-last{padding-bottom:40px}.glz-esc-faq{padding:26px 0 30px;border-top:1px solid var(--line)}.glz-faq-item{border-bottom:1px solid var(--line);padding:12px 0}.glz-faq-item summary{cursor:pointer;font-size:15.5px;font-weight:800;line-height:1.35;list-style:none;position:relative;padding-right:28px}.glz-faq-item summary::-webkit-details-marker{display:none}.glz-faq-item summary:after{content:"+";position:absolute;right:4px;top:-2px;font-size:22px;font-weight:400;color:var(--accent-red);line-height:1}.glz-faq-item[open] summary:after{content:"−"}.glz-faq-item p{margin:10px 0 4px;font-size:14.5px;line-height:1.6;color:var(--text-muted)}@media(max-width:520px){.glz-esc-inner{padding:0 13px}.glz-esc-ship-row{gap:8px 16px;font-size:12px}.glz-rev-text,.glz-faq-item p,.glz-esc-guarantee p{font-size:14px}}
+</style></head> <body> <div id="adp-loader" aria-hidden="true"><div class="sp"></div></div> <div id="adp-content"> <script>(function(){const ADP = {"pageId":"glz-hero-hw2","pitchSeconds":3826,"subParam":"sub17","replay":false,"posthogKey":"phc_uJYiUD25JZ8TYHo8FztASsR2HkvAfBr6KjxswYuYAp8T","posthogHost":"https://us.i.posthog.com","ctaOmitTemplate":true,"rtTracker":true,"ctaForwardParams":true,"revealAtSeconds":3188,"comments":{"url":"https://w2n.dev/cbs/comments-glz-hero-cp.json","avatars":"https://w2n.dev/cbs/avatars/","gate":["v23g","v3g","v4"],"bubbleFor":["v23g","v3g","v4"],"curatedCommentsFor":["v23g","v3g","v4"]}};
+window.__ADP__ = ADP;})();</script> <div class="glz-hero-top"> <div class="glz-brandbar" role="banner" aria-label="HEALTH header"> <span class="glz-logo"> <svg class="glz-ekg" viewBox="0 0 40 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h7l3-7 5 14 4-9 2 2h15"></path></svg> <span class="glz-brand">HEALTH</span> </span> </div> <div class="glz-seal"> <svg class="glz-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg> <span>MEDICALLY REVIEWED � TRUSTED HEALTH REPORTING</span> </div> <section class="glz-article-shell"> <div class="glz-byline"> <span class="glz-author">Dr. Phill</span> <span class="glz-sep">�</span> <span class="glz-updated">Updated 32 minutes ago</span> <span class="glz-sep">�</span> <span class="glz-date">07/01/2026</span> </div> <h1 class="glz-headline glz-hl-default"> <span class="glz-hl-red">No Insulin, No Metformin...</span> <span class="glz-hl-main">Just a Natural Honey Blend! More than 4,847 Americans are Using this Recipe to <strong>Reverse Type 2 Diabetes in 21 Days.</strong></span> </h1> <h1 class="glz-headline glz-hl-faith glz-hl-faith-v3g"> <span class="glz-hl-red">God Wants to Save You From Diabetes.</span> <span class="glz-hl-main">The Biblical Honey Blend Foretold in Scripture is Helping Thousands Go Medication-Free. <strong>No Insulin. No Metformin.</strong></span> </h1> </section> </div>  <div class="knv-hero-video-block"> <div class="knv-hero-video-inner" id="knvHeroVideo"> <vturb-smartplayer id="vid-6a7429b527ea052a12f15184" style="display:block;margin:0 auto;width:100%;"></vturb-smartplayer> <script type="text/javascript">(function(){const playerSrc = "https://scripts.converteai.net/cd205cb8-2302-4f52-b9f6-e9eb2ed395a6/players/6a7429b527ea052a12f15184/v4/player.js";
+
+      (function () {
+        var s = document.createElement('script');
+        s.src = playerSrc;
+        s.async = true;
+        document.head.appendChild(s);
+      })();
+    })();</script> </div> <div class="knv-hero-cue-wrap"> <span class="knv-video-title">Exclusive Video Report</span> <span class="knv-click-cue"><span class="knv-play-dot" aria-hidden="true"><svg viewBox="0 0 8 10"><path d="M1 1v8l6-4z"></path></svg></span>Tap To Start The Report</span> </div> </div> <script>
+  // Clamp por ALTURA: se o player renderizar mais alto que 78vh (video vertical em tela 4:3),
+  // reduz a largura proporcionalmente. Reage ao player:resize (nativo VTurb) + resize da janela.
+  (function () {
+    // Proporcao REAL vem da config do player (config.video.width/height) - zero medicao
+    // de rect, zero feedback loop. width = min(largura disponivel, 78vh / ratio).
+    var MAXVH = 0.78, lastW = -1;
+    function videoRatio() {
+      try {
+        var v = document.querySelector('.knv-hero-video-inner vturb-smartplayer').config.video;
+        if (v && v.width > 0 && v.height > 0) return v.height / v.width;
+      } catch (e) {}
+      return null;
+    }
+    function clamp() {
+      var inner = document.getElementById('knvHeroVideo');
+      var p = inner && inner.querySelector('vturb-smartplayer');
+      if (!inner || !p) return;
+      var rt = videoRatio();
+      if (!rt) return; // config ainda nao chegou - retries cuidam
+      var block = inner.parentElement, cs = getComputedStyle(block);
+      var avail = block.clientWidth - parseFloat(cs.paddingLeft || 0) - parseFloat(cs.paddingRight || 0);
+      var w = Math.floor(Math.min(avail, (window.innerHeight * MAXVH) / rt));
+      if (w > 0 && w !== lastW) {
+        lastW = w;
+        inner.style.width = w + 'px'; // CSS max-width (420px desktop) continua mandando acima disto
+        try { window.dispatchEvent(new Event('resize')); } catch (e) {}
+      }
+    }
+    var p0poll = setInterval(function () { clamp(); if (lastW > 0) clearInterval(p0poll); }, 400);
+    setTimeout(function () { clearInterval(p0poll); }, 15000);
+    (function arm() {
+      var p = document.querySelector('.knv-hero-video-inner vturb-smartplayer');
+      if (!p) { setTimeout(arm, 300); return; }
+      p.addEventListener('player:ready', function () { setTimeout(clamp, 50); });
+      p.addEventListener('player:resize', function () { setTimeout(clamp, 50); });
+    })();
+    window.addEventListener('resize', function () { setTimeout(clamp, 30); });
+  })();
+
+  // Cue "Tap To Start": some quando a pessoa TOCA no player (o tap que inicia com som).
+  // Durante o autoplay mudo o cue continua visivel - e o convite pro tap.
+  // (instances[0].video e stub nao-confiavel; clique no player e deterministico.)
+  (function () {
+    document.addEventListener('click', function (e) {
+      if (!e.target || !e.target.closest) return;
+      if (e.target.closest('vturb-smartplayer')) {
+        var wrap = document.querySelector('.knv-hero-cue-wrap');
+        if (wrap) wrap.style.display = 'none';
+      }
+    }, true);
+  })();
+</script>  <section class="knv-comments" id="knvComments" aria-label="Comments"> <div class="knv-cm-head"> <span class="knv-cm-title">Comments <b id="knvCmCount"></b></span> <span class="knv-cm-live"><i class="knv-cm-livedot"></i>LIVE � New comments appear as the report plays</span> </div> <div class="knv-cm-list" id="knvCmList"></div> </section>  <div id="knvClaim" class="glz-claim hide" aria-label="Limited time offer"> <div class="glz-claim-inner"> <span class="glz-claim-badge"><span class="glz-claim-dot"></span>Limited Time Offer</span> <p class="glz-claim-text">Your special pricing expires in</p> <!-- fonte do engine (escondida); as caixas espelham este valor --> <span class="glz-claim-timer-src" id="knvClaimTimer" aria-hidden="true">05:00</span> <div class="glz-cd" role="timer" aria-label="Countdown to end of offer"> <div class="glz-cd-box"><span class="glz-cd-num" id="glzCdMin">05</span><span class="glz-cd-lbl">MIN</span></div> <span class="glz-cd-colon">:</span> <div class="glz-cd-box"><span class="glz-cd-num" id="glzCdSec">00</span><span class="glz-cd-lbl">SEC</span></div> </div> <p class="glz-claim-guarantee"> <b>60-Day Money-Back Guarantee.</b> Try it risk-free: if you do not feel the
+      difference, you get every penny back. No questions asked.
+</p> </div> </div> <script>
+  // Espelha o #knvClaimTimer (que o engine atualiza com "MM:SS") nas caixas glz-cd.
+  (function () {
+    var src = document.getElementById('knvClaimTimer');
+    var mm = document.getElementById('glzCdMin'), ss = document.getElementById('glzCdSec');
+    if (!src || !mm || !ss) return;
+    var last = '';
+    function sync() {
+      var v = (src.textContent || '').trim();
+      if (v === last) return;
+      last = v;
+      var p = v.split(':');
+      if (p.length === 2) {
+        mm.textContent = p[0];
+        ss.textContent = p[1];
+        // pulso rapido no segundo que muda
+        ss.parentNode.classList.remove('glz-cd-tick');
+        void ss.parentNode.offsetWidth;
+        ss.parentNode.classList.add('glz-cd-tick');
+      }
+    }
+    var mo = new MutationObserver(sync);
+    mo.observe(src, { childList: true, characterData: true, subtree: true });
+    sync();
+    setInterval(sync, 500); // fallback caso o observer perca algo
+  })();
+</script>  <div id="pote" class="pote hide knv-cta-block"> <!-- GoogleFonts --> <link rel="preconnect" href="https://fonts.googleapis.com"> <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""> <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"> <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet"> <!-- Bootstrap --> <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css"> <link rel="stylesheet" type="text/css" href="css/bootstrap-icons.min.css"> <script type="text/javascript" src="js/bootstrap.bundle.min.js" defer=""></script> <!-- Main Styles --> <link rel="stylesheet" type="text/css" href="css/main.css"> <!-- Main Scripts --> <script type="text/javascript">
+    const assetsPath = "https://getglucozen.com/";
+  </script> <script type="text/javascript" src="js/products.js" defer=""></script>  <script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+      var metaTag = document.createElement('meta');
+      metaTag.name = 'referrer';
+      metaTag.content = 'no-referrer';
+      document.head.appendChild(metaTag);
+    });
+  </script> <!-- Restyle robusto dos cards: o products.js re-renderiza o #pote depois de revelado
+       (reconstroi o innerHTML) e descarta o CSS externo. Este script aplica os estilos
+       INLINE e re-aplica a cada re-render via MutationObserver.
+       Alcanca tambem os blocos de compra repetidos da escada (v4): mesmos cards, mesmo
+       widget, entao precisam do mesmo tratamento. Nas paginas sem escada o segundo
+       seletor nao casa com nada e o custo e zero. --> <script>
+    (function () {
+      function paint() {
+        var links = document.querySelectorAll('#pote .buylink, .glz-escada .buylink');
+        for (var i = 0; i < links.length; i++) {
+          var a = links[i], promo = a.classList.contains('kit3');
+          // garante o marcador de clique do VTurb (classe + id incremental) mesmo se o
+          // widget re-renderizar - senao o Analytics nao conta o clique no botao.
+          a.classList.add('smartplayer-click-event');
+          if (!a.id) a.id = 'smartplayer-click-event-' + (i + 1);
+          var hdr = a.querySelector('.item-header');
+          if (hdr && !promo) {
+            // transition:none e CRITICO - o widget re-dispara a transition:0.2s do header,
+            // e uma transition ativa vence ate inline !important (nivel mais alto da cascata).
+            hdr.style.setProperty('transition', 'none', 'important');
+            hdr.style.setProperty('background-color', '#0e46a3', 'important');
+            hdr.style.setProperty('color', '#ffffff', 'important');
+          }
+          var btn = a.querySelector('.item-buy .button');
+          if (btn) {
+            btn.style.setProperty('border-radius', '999px', 'important');
+            btn.style.setProperty('border', '0', 'important');
+            if (promo) {
+              btn.style.setProperty('background', 'linear-gradient(180deg,#ffd21a,#ff9e00)', 'important');
+              btn.style.setProperty('color', '#3a2600', 'important');
+              btn.style.setProperty('box-shadow', '0 8px 22px rgba(255,158,0,.5)', 'important');
+            } else {
+              btn.style.setProperty('background', 'linear-gradient(180deg,#2ec06a,#1a8a4a)', 'important');
+              btn.style.setProperty('color', '#ffffff', 'important');
+              btn.style.setProperty('box-shadow', '0 6px 16px rgba(26,138,74,.34)', 'important');
+            }
+          }
+        }
+      }
+      var pote = document.getElementById('pote');
+      if (!pote) return;
+      var mo = new MutationObserver(paint);
+      mo.observe(pote, { childList: true, subtree: true });
+      var esc = document.querySelector('.glz-escada');
+      if (esc) mo.observe(esc, { childList: true, subtree: true });
+      paint();
+      var n = 0, iv = setInterval(function () { paint(); if (++n > 60) clearInterval(iv); }, 400);
+    })();
+  </script> <!-- CTA Products --> <section class="products py-4"> <div class="container">  <div class="productsGrid sm-horiz"> <a href="https://cc.getglucozen.com/v2/checkout.php?campaignkey=pg-cyb--kit-kit3--funnelid-homefunnel&package=6bottles&hid=b2lkPW9mZl83MDM5MDQ2JmFpZD1hZmY4NzQ1NjI2JnVpZD1ibF84Mzc5MzU1&affid=aff8745626" class="buylink kit3 smartplayer-click-event" id="smartplayer-click-event-1" title="6 Bottles" data-offer="promo" data-headline="Best Offer!" data-description="180 Days, 6 Bottles" data-bottles="6" data-guarantee="60" data-image="img-6-bottles.webp" data-total="294" data-full="1074" data-shipping="Free" data-value-round="yes" data-button-text="BUY NOW" data-aux="Best Offer!"></a><a href="https://cc.getglucozen.com/v2/checkout.php?campaignkey=pg-cyb--kit-kit2--funnelid-homefunnel&package=3bottles&hid=b2lkPW9mZl83MDM5MDQ2JmFpZD1hZmY4NzQ1NjI2JnVpZD1ibF84MzQ3MDA1&affid=aff8745626" class="buylink kit2 smartplayer-click-event" id="smartplayer-click-event-2" title="3 Bottles" data-offer="mid" data-headline="Most Popular" data-description="90 Days, 3 Bottles" data-bottles="3" data-guarantee="60" data-image="img-3-bottles.webp" data-total="207" data-full="537" data-shipping="Free" data-value-round="yes" data-button-text="BUY NOW" data-aux="Good Offer!"></a><a href="https://cc.getglucozen.com/v2/checkout.php?campaignkey=pg-cyb--kit-kit1--funnelid-homefunnel&package=2bottles&hid=b2lkPW9mZl83MDM5MDQ2JmFpZD1hZmY4NzQ1NjI2JnVpZD1ibF85MzM1Njk2&affid=aff8745626" class="buylink kit1 smartplayer-click-event" id="smartplayer-click-event-3" title="2 Bottles" data-offer="basic" data-headline="Basic Offer" data-description="60 Days, 2 Bottles" data-bottles="2" data-guarantee="60" data-image="img-2-bottles.webp" data-total="158" data-full="358" data-shipping="9.99" data-value-round="yes" data-button-text="BUY NOW" data-aux="Basic Offer"></a> </div> </div> </section> </div>  <div class="glz-escada-gate"> <div class="glz-escada hide" aria-label="Offer details"> <!-- ============ GARANTIA ============ --> <section class="glz-esc-guarantee"> <div class="glz-esc-inner">  <div class="glz-esc-seal" aria-hidden="true"> <svg viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5l8-3zm-1.2 13.5l5.3-5.3-1.4-1.4-3.9 3.9-1.7-1.7-1.4 1.4 3.1 3.1z"></path></svg> </div> <h2>100% Satisfaction or Your Money Back</h2> <p class="glz-esc-lead">60-Day Unconditional Guarantee</p> <p>
+If for any reason you are not satisfied within 60 days, send one email to
+<b>contact@customercs.com</b> and we will buy back every bottle — including the ones you
+        already opened. No forms. No questions. You do not even have to ship anything back.
+</p> </div> </section> <!-- ============ FRETE / QUALIDADE ============ --> <section class="glz-esc-ship"> <div class="glz-esc-inner glz-esc-ship-row"> <span><b>Free Shipping</b> on 3 and 6 bottle packages</span> <span><b>Ships from the U.S.</b> within 1 business day</span> <span><b>FDA-registered</b>, GMP-certified facility</span> </div> </section> <!-- ============ DEPOIMENTOS ============ --> <section class="glz-esc-reviews"> <div class="glz-esc-inner"> <h2>What people are writing to us</h2> <article class="glz-rev"> <div class="glz-rev-head"> <img class="glz-rev-face" src="images/f07.jpg" alt="" width="52" height="52" loading="lazy"> <div> <div class="glz-rev-name">Barbara T. <span class="glz-rev-city">� Fort Wayne, IN</span></div> <div class="glz-rev-stars" aria-label="5 out of 5 stars"></div> <div class="glz-rev-buy"> Purchased the 6 Bottle Package</div> </div> </div> <p class="glz-rev-text">I have been checking my numbers twice a day for eleven years, so I know exactly what my mornings look like. After about two weeks on this the readings started coming in lower than what I was used to seeing, and they have stayed there. My doctor asked what I changed. That was the first time in years I had good news to bring to an appointment.</p> </article><article class="glz-rev"> <div class="glz-rev-head"> <img class="glz-rev-face" src="images/m09.jpg" alt="" width="52" height="52" loading="lazy"> <div> <div class="glz-rev-name">Raymond K. <span class="glz-rev-city">� Athens, GA</span></div> <div class="glz-rev-stars" aria-label="5 out of 5 stars"></div> <div class="glz-rev-buy"> Purchased the 6 Bottle Package</div> </div> </div> <p class="glz-rev-text">What got me was the afternoons. I used to lose the whole stretch after lunch — heavy, foggy, useless. That is the part that came back first. My wife noticed before I said anything. I am on the third bottle now and I ordered six more, because I do not want to find out what happens if I stop.</p> </article><article class="glz-rev"> <div class="glz-rev-head"> <img class="glz-rev-face" src="images/f14.jpg" alt="" width="52" height="52" loading="lazy"> <div> <div class="glz-rev-name">Diane F. <span class="glz-rev-city">� Modesto, CA</span></div> <div class="glz-rev-stars" aria-label="5 out of 5 stars"></div> <div class="glz-rev-buy"> Purchased the 3 Bottle Package</div> </div> </div> <p class="glz-rev-text">I have bought so many things that promised the world and did nothing that I almost did not order. I gave it a month. The difference showed up in my log book, not in my imagination — and that is the only thing I trust at this point. I take it with breakfast and I do not think about it anymore.</p> </article> </div> </section> <!-- ============ CTA #2 ============ --> <section class="glz-esc-cta"> <div class="glz-esc-inner"> <h2 class="glz-esc-cta-title">Choose Your Package</h2> <section class="products"> <div class="container"> <div class="productsGrid sm-horiz"> <a href="https://cc.getglucozen.com/v2/checkout.php?campaignkey=pg-cyb--kit-kit3--funnelid-homefunnel&package=6bottles&hid=b2lkPW9mZl83MDM5MDQ2JmFpZD1hZmY4NzQ1NjI2JnVpZD1ibF84Mzc5MzU1&affid=aff8745626" class="buylink kit3 smartplayer-click-event" id="smartplayer-click-event-4" title="6 Bottles" data-offer="promo" data-headline="Best Offer!" data-description="180 Days, 6 Bottles" data-bottles="6" data-guarantee="60" data-image="img-6-bottles.webp" data-total="294" data-full="1074" data-shipping="Free" data-value-round="yes" data-button-text="BUY NOW" data-aux="Best Offer!"></a><a href="https://cc.getglucozen.com/v2/checkout.php?campaignkey=pg-cyb--kit-kit2--funnelid-homefunnel&package=3bottles&hid=b2lkPW9mZl83MDM5MDQ2JmFpZD1hZmY4NzQ1NjI2JnVpZD1ibF84MzQ3MDA1&affid=aff8745626" class="buylink kit2 smartplayer-click-event" id="smartplayer-click-event-5" title="3 Bottles" data-offer="mid" data-headline="Most Popular" data-description="90 Days, 3 Bottles" data-bottles="3" data-guarantee="60" data-image="img-3-bottles.webp" data-total="207" data-full="537" data-shipping="Free" data-value-round="yes" data-button-text="BUY NOW" data-aux="Good Offer!"></a><a href="https://cc.getglucozen.com/v2/checkout.php?campaignkey=pg-cyb--kit-kit1--funnelid-homefunnel&package=2bottles&hid=b2lkPW9mZl83MDM5MDQ2JmFpZD1hZmY4NzQ1NjI2JnVpZD1ibF85MzM1Njk2&affid=aff8745626" class="buylink kit1 smartplayer-click-event" id="smartplayer-click-event-6" title="2 Bottles" data-offer="basic" data-headline="Basic Offer" data-description="60 Days, 2 Bottles" data-bottles="2" data-guarantee="60" data-image="img-2-bottles.webp" data-total="158" data-full="358" data-shipping="9.99" data-value-round="yes" data-button-text="BUY NOW" data-aux="Basic Offer"></a> </div> </div> </section> </div> </section> <!-- ============ FAQ ============ --> <section class="glz-esc-faq"> <div class="glz-esc-inner"> <h2>Frequently Asked Questions</h2> <details class="glz-faq-item"> <summary>Is this safe to take?</summary> <p>It is produced in a U.S.-based facility that is FDA-registered and GMP-certified — the same manufacturing standard required for prescription supplements. Every batch is third-party tested for purity. If you are currently under treatment or taking prescribed medication, bring it to your doctor before starting, as you would with any new supplement.</p> </details><details class="glz-faq-item"> <summary>How long until I notice something?</summary> <p>Most people report a difference in energy and afternoon focus within the first 7 to 14 days. The changes people care about most tend to show up between weeks 3 and 8, which is why the 6-bottle package is the one most customers choose — it covers the full window without interruption.</p> </details><details class="glz-faq-item"> <summary>Can I take it with what my doctor already prescribed?</summary> <p>The ingredients are natural and there are no known interactions, but your doctor knows your history and we do not. Show them the label before you start. Never stop or change a prescribed treatment on your own.</p> </details><details class="glz-faq-item"> <summary>Is it sold on Amazon or in stores?</summary> <p>No. It is available only through this page. Bottles with similar packaging have shown up on resale sites and we cannot verify what is inside them — those are not ours and are not covered by the guarantee.</p> </details><details class="glz-faq-item"> <summary>What if it does not work for me?</summary> <p>Then you pay nothing. You have 60 days from the day it arrives. Send one email to contact@customercs.com and we refund the full amount — including bottles you already opened and used. No forms, no questions, no return required.</p> </details><details class="glz-faq-item"> <summary>How do I take it?</summary> <p>One serving a day, with a meal. Most people take it with breakfast so it becomes automatic. There is nothing to measure and nothing to prepare.</p> </details><details class="glz-faq-item"> <summary>Is there any special diet I have to follow?</summary> <p>No diet is required and nothing is forbidden. People who also improve what they eat tend to see more, which is true of anything — but the protocol was built for people who are not going to overhaul their lives.</p> </details><details class="glz-faq-item"> <summary>Will I be charged again every month?</summary> <p>No. This is a single purchase, one time. There is no subscription, no auto-ship and no recurring charge of any kind. What you order is what you pay, once.</p> </details><details class="glz-faq-item"> <summary>How long does shipping take?</summary> <p>Orders ship from the United States within one business day. Delivery usually takes 5 to 7 business days. You get a tracking number by email as soon as it leaves the warehouse.</p> </details><details class="glz-faq-item"> <summary>Is my payment information safe?</summary> <p>The checkout runs on an encrypted, PCI-compliant page. We never see or store your card details.</p> </details><details class="glz-faq-item"> <summary>Why is the 6-bottle package cheaper per bottle?</summary> <p>Because the results people write to us about build over months, not weeks — and because buying once at volume is what lets us keep the price where it is. It is also the package the guarantee was designed around.</p> </details> </div> </section> <!-- ============ GARANTIA (repetida, como na BrainMary) ============ --> <section class="glz-esc-guarantee glz-esc-guarantee-2"> <div class="glz-esc-inner"> <p class="glz-esc-lead">Still deciding?</p> <p>
+The 60 days start the day it arrives. If nothing changes for you, one email gets
+        every penny back — even on opened bottles. The only thing you risk is finding out.
+</p> </div> </section> <!-- ============ CTA #3 ============ --> <section class="glz-esc-cta glz-esc-cta-last"> <div class="glz-esc-inner"> <h2 class="glz-esc-cta-title">Choose Your Package</h2> <section class="products"> <div class="container"> <div class="productsGrid sm-horiz"> <a href="https://cc.getglucozen.com/v2/checkout.php?campaignkey=pg-cyb--kit-kit3--funnelid-homefunnel&package=6bottles&hid=b2lkPW9mZl83MDM5MDQ2JmFpZD1hZmY4NzQ1NjI2JnVpZD1ibF84Mzc5MzU1&affid=aff8745626" class="buylink kit3 smartplayer-click-event" id="smartplayer-click-event-7" title="6 Bottles" data-offer="promo" data-headline="Best Offer!" data-description="180 Days, 6 Bottles" data-bottles="6" data-guarantee="60" data-image="img-6-bottles.webp" data-total="294" data-full="1074" data-shipping="Free" data-value-round="yes" data-button-text="BUY NOW" data-aux="Best Offer!"></a><a href="https://cc.getglucozen.com/v2/checkout.php?campaignkey=pg-cyb--kit-kit2--funnelid-homefunnel&package=3bottles&hid=b2lkPW9mZl83MDM5MDQ2JmFpZD1hZmY4NzQ1NjI2JnVpZD1ibF84MzQ3MDA1&affid=aff8745626" class="buylink kit2 smartplayer-click-event" id="smartplayer-click-event-8" title="3 Bottles" data-offer="mid" data-headline="Most Popular" data-description="90 Days, 3 Bottles" data-bottles="3" data-guarantee="60" data-image="img-3-bottles.webp" data-total="207" data-full="537" data-shipping="Free" data-value-round="yes" data-button-text="BUY NOW" data-aux="Good Offer!"></a><a href="https://cc.getglucozen.com/v2/checkout.php?campaignkey=pg-cyb--kit-kit1--funnelid-homefunnel&package=2bottles&hid=b2lkPW9mZl83MDM5MDQ2JmFpZD1hZmY4NzQ1NjI2JnVpZD1ibF85MzM1Njk2&affid=aff8745626" class="buylink kit1 smartplayer-click-event" id="smartplayer-click-event-9" title="2 Bottles" data-offer="basic" data-headline="Basic Offer" data-description="60 Days, 2 Bottles" data-bottles="2" data-guarantee="60" data-image="img-2-bottles.webp" data-total="158" data-full="358" data-shipping="9.99" data-value-round="yes" data-button-text="BUY NOW" data-aux="Basic Offer"></a> </div> </div> </section> </div> </section> </div> </div>  <div class="knv-postcta hide" aria-label="Order assurance"> <div class="knv-postcta-row"> <span class="knv-pc-badge"> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5l8-3zm-1.2 13.5l5.3-5.3-1.4-1.4-3.9 3.9-1.7-1.7-1.4 1.4 3.1 3.1z"></path></svg> 60-Day Money-Back Guarantee
+</span> <span class="knv-pc-badge"> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1a5 5 0 0 1 5 5v3h1.5A1.5 1.5 0 0 1 20 10.5v10A1.5 1.5 0 0 1 18.5 22h-13A1.5 1.5 0 0 1 4 20.5v-10A1.5 1.5 0 0 1 5.5 9H7V6a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v3h6V6a3 3 0 0 0-3-3zm0 9.2a1.8 1.8 0 0 0-.9 3.36V17a.9.9 0 1 0 1.8 0v-1.44a1.8 1.8 0 0 0-.9-3.36z"></path></svg>
+Secure Encrypted Checkout
+</span> <span class="knv-pc-badge"> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h11v4h3.5l3.5 4.5V17h-2.1a2.5 2.5 0 0 1-4.8 0H9.9a2.5 2.5 0 0 1-4.8 0H3V5zm14 6v3h2.6L17.6 11H17zm-9.5 5a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm10 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"></path></svg>
+Fast US Shipping
+</span> </div> <p class="knv-postcta-note">
+Your order is processed on a secure, encrypted checkout. If you do not feel the
+    difference within 60 days, one email gets you a full refund. You risk nothing.
+</p> </div>  <div class="knv-footer-block" role="contentinfo"> <b>Copyright 2026 � Health Day.</b> All Rights Reserved.
+</div>  <script src="js/engine.js" defer=""></script> <script src="js/v1.js" defer=""></script> </div>  <vercel-analytics data-props="{}" data-params="{}" data-pathname="/claude_glucozen_hero_hw_v2/"></vercel-analytics> <script type="module">var v=()=>{window.va||(window.va=function(...i){window.vaq||(window.vaq=[]),window.vaq.push(i)})},w="@vercel/analytics",b="2.0.1";function f(){return typeof window<"u"}function p(){try{const e="production"}catch{}return"production"}function h(e="auto"){if(e==="auto"){window.vam=p();return}window.vam=e}function y(){return(f()?window.vam:p())||"production"}function d(){return y()==="development"}function m(e,i){if(!e||!i)return e;let n=e;try{const t=Object.entries(i);for(const[r,s]of t)if(!Array.isArray(s)){const o=u(s);o.test(n)&&(n=n.replace(o,`/[${r}]`))}for(const[r,s]of t)if(Array.isArray(s)){const o=u(s.join("/"));o.test(n)&&(n=n.replace(o,`/[...${r}]`))}return n}catch{return e}}function u(e){return new RegExp(`/${g(e)}(?=[/?#]|$)`)}function g(e){return e.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}function E(e){return e.scriptSrc?a(e.scriptSrc):d()?"https://va.vercel-scripts.com/v1/script.debug.js":e.basePath?a(`${e.basePath}/insights/script.js`):"/_vercel/insights/script.js"}function S(e,i){var n;let t=e;if(i)try{t={...(n=JSON.parse(i))==null?void 0:n.analytics,...e}}catch{}h(t.mode);const r={sdkn:w+(t.framework?`/${t.framework}`:""),sdkv:b};return t.disableAutoTrack&&(r.disableAutoTrack="1"),t.viewEndpoint&&(r.viewEndpoint=a(t.viewEndpoint)),t.eventEndpoint&&(r.eventEndpoint=a(t.eventEndpoint)),t.sessionEndpoint&&(r.sessionEndpoint=a(t.sessionEndpoint)),d()&&t.debug===!1&&(r.debug="false"),t.dsn&&(r.dsn=t.dsn),t.endpoint?r.endpoint=t.endpoint:t.basePath&&(r.endpoint=a(`${t.basePath}/insights`)),{beforeSend:t.beforeSend,src:E(t),dataset:r}}function a(e){return e.startsWith("http://")||e.startsWith("https://")||e.startsWith("/")?e:`/${e}`}function k(e={debug:!0},i){var n;if(!f())return;const{beforeSend:t,src:r,dataset:s}=S(e,i);if(v(),t&&((n=window.va)==null||n.call(window,"beforeSend",t)),document.head.querySelector(`script[src*="${r}"]`))return;const o=document.createElement("script");o.src=r;for(const[c,l]of Object.entries(s))o.dataset[c]=l;o.defer=!0,o.onerror=()=>{const c=d()?"Please check if any ad blockers are enabled and try again.":"Be sure to enable Web Analytics for your project and deploy again. See https://vercel.com/docs/analytics/quickstart for more information.";console.log(`[Vercel Web Analytics] Failed to load script from ${r}. ${c}`)},document.head.appendChild(o)}function $({route:e,path:i}){var n;(n=window.va)==null||n.call(window,"pageview",{route:e,path:i})}function A(){try{return}catch{}}function j(){try{return'{"analytics":{"scriptSrc":"e40c6b700fcdce2e/script.js","viewEndpoint":"e40c6b700fcdce2e/view","eventEndpoint":"e40c6b700fcdce2e/event","sessionEndpoint":"e40c6b700fcdce2e/session"},"speedInsights":{"scriptSrc":"7b88888a790455f6/script.js","endpoint":"7b88888a790455f6/vitals"}}'}catch{}}customElements.define("vercel-analytics",class extends HTMLElement{constructor(){super();try{const i=JSON.parse(this.dataset.props??"{}"),n=JSON.parse(this.dataset.params??"{}");k({...i,disableAutoTrack:!0,framework:"astro",basePath:A(),beforeSend:window.webAnalyticsBeforeSend},j());const t=this.dataset.pathname;$({route:m(t??"",n),path:t})}catch(i){throw new Error(`Failed to parse WebAnalytics properties: ${i}`)}}});</script> </body></html>

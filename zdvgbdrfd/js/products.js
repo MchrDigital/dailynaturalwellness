@@ -67,8 +67,8 @@ product.forEach(function (e) {
 	}
 
 	// Cards for promo vs regular
-	if (offer == 'promo') cards = "assets/main/products/img/cards-dark.webp";
-	else cards = "assets/main/products/img/cards.webp";
+	if (offer == 'promo') cards = "images/cards-dark.webp";
+else cards = "images/cards.webp";
 
 	// Build HTML
 	e.innerHTML = `

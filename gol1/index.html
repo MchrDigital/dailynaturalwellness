@@ -44,12 +44,32 @@ body {
 
 <script>
 (function(){
-  var q = location.search.replace(/^\?/, '');
-  if(!q) return;
-  document.querySelectorAll('a.buylink').forEach(function(a){
-    if(a.href.indexOf('rt.yourhealthydailyguide.com') === -1) return;
-    a.href += (a.href.indexOf('?') > -1 ? '&' : '?') + q;
-  });
+  var RT = 'https://rt.yourhealthydailyguide.com/click/';
+  var MAP = { '6 BOTTLES': 3, '3 BOTTLES': 2, '2 BOTTLES': 1 };
+
+  function targetFor(a){
+    var c = a.querySelector('.count');
+    var n = c && MAP[c.textContent.trim().toUpperCase()];
+    if(!n) return null;
+    var params = new URLSearchParams(location.search);          // UTMs, rtkcid etc. da página
+    try {
+      new URL(a.href, location.href).searchParams.forEach(function(v, k){
+        params.set(k, v);                                       // mantém subid2/sub8/sid5/sub16 do VTurb
+      });
+    } catch(e){}
+    var qs = params.toString();
+    return RT + n + (qs ? '?' + qs : '');
+  }
+
+  document.addEventListener('click', function(e){
+    var a = e.target.closest && e.target.closest('a.buylink');
+    if(!a) return;
+    var url = targetFor(a);
+    if(!url) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    window.location.href = url;
+  }, true);
 })();
 </script>
 

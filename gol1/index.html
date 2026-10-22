@@ -612,48 +612,125 @@ i.fab, i.fa-brands, .fb-topbar i.fa-brands { font-family: "Font Awesome 6 Brands
 		}, 500);
 	</script>
 
+	<!-- ===================== DELAY DA OFERTA (corrigido) =====================
+	     Antes: usava $(document).ready() sem jQuery carregado na pagina ->
+	     ReferenceError na 1a linha -> displayHiddenElements nunca era chamado
+	     e .esconder ficava escondido para sempre.
+	     Agora: JS puro, idempotente, imune a corrida do evento player:ready.
+	======================================================================== -->
 	<script>
-		$(document).ready(function () {
-			var delaySeconds = 1;
-			var player = document.querySelector("vturb-smartplayer");
+		(function () {
 
-			player.addEventListener("player:ready", function () {
-				player.displayHiddenElements(delaySeconds, [".esconder"], { persist: true });
+			/* >>> ALTERE AQUI O DELAY (em segundos de video assistido) <<< */
+			var DELAY_SECONDS = 1;
 
-				var initialized = false;
+			var PLAYER_SELECTOR = 'vturb-smartplayer';
+			var HIDDEN_SELECTORS = ['.esconder'];
 
-				var checkInterval = setInterval(function () {
-					var $target = $(".esconder:visible").first();
+			var delayArmed = false;    // displayHiddenElements registrado no player
+			var readyBound = false;    // listener player:ready anexado
+			var revealHandled = false; // scroll + countdown ja executados
 
-					if ($target.length && !initialized) {
-						initialized = true;
-						clearInterval(checkInterval);
+			/* ---------- helpers (sem jQuery) ---------- */
 
-						var $scrollTarget = $("#scrolldown");
-						if ($scrollTarget.length) {
-							$('html, body').animate({
-								scrollTop: $scrollTarget.offset().top
-							}, 800);
+			function isVisible(el) {
+				if (!el) return false;
+				return window.getComputedStyle(el).display !== 'none';
+			}
+
+			function scrollToOffer() {
+				var target = document.getElementById('scrolldown');
+				if (!target) return;
+				var top = target.getBoundingClientRect().top + window.pageYOffset;
+				try {
+					window.scrollTo({ top: top, behavior: 'smooth' });
+				} catch (e) {
+					window.scrollTo(0, top);
+				}
+			}
+
+			function startCountdowns() {
+				var els = document.querySelectorAll('.esconder .countdown');
+				Array.prototype.forEach.call(els, function (el) {
+					var match = (el.textContent || '').trim().match(/\d+/);
+					if (!match) return;
+					var value = parseInt(match[0], 10);
+					var timer = setInterval(function () {
+						if (value > 48) {
+							value = Math.max(value - 6, 48);
+							el.textContent = value;
+						} else {
+							clearInterval(timer);
 						}
+					}, 8000);
+				});
+			}
 
-						$target.find(".countdown").each(function () {
-							var $countdownEl = $(this);
-							var desiredValue = parseInt($countdownEl.text().trim().match(/\d+/)[0], 10);
+			function onRevealed() {
+				if (revealHandled) return;
+				revealHandled = true;
+				scrollToOffer();
+				startCountdowns();
+			}
 
-							var decrementTimer = setInterval(function () {
-								if (desiredValue > 48) {
-									desiredValue = Math.max(desiredValue - 6, 48);
-									$countdownEl.text(desiredValue);
-								} else {
-									clearInterval(decrementTimer);
-								}
-							}, 8000);
-						});
+			/* ---------- 1) arma o delay no player ---------- */
 
-					}
-				}, 500);
-			});
-		});
+			function armDelay() {
+				if (delayArmed) return true;
+				var player = document.querySelector(PLAYER_SELECTOR);
+				if (!player || typeof player.displayHiddenElements !== 'function') return false;
+				try {
+					player.displayHiddenElements(DELAY_SECONDS, HIDDEN_SELECTORS, { persist: true });
+					delayArmed = true;
+				} catch (e) {
+					return false;
+				}
+				return true;
+			}
+
+			function bindPlayerReady() {
+				if (readyBound) return;
+				var player = document.querySelector(PLAYER_SELECTOR);
+				if (!player) return;
+				readyBound = true;
+				player.addEventListener('player:ready', armDelay);
+			}
+
+			/* o custom element pode ainda nao estar "upgradado" e o player:ready
+			   pode ja ter disparado -> tenta direto + poll curto */
+			bindPlayerReady();
+			armDelay();
+
+			var armPoll = setInterval(function () {
+				bindPlayerReady();
+				if (armDelay()) clearInterval(armPoll);
+			}, 200);
+
+			setTimeout(function () { clearInterval(armPoll); }, 30000);
+
+			/* ---------- 2) reage quando a oferta aparece ----------
+			   cobre os dois caminhos: liberada pelo player agora, ou
+			   ja liberada pelo persist em um reload */
+
+			var watchPoll = setInterval(function () {
+				if (isVisible(document.querySelector('.esconder'))) {
+					clearInterval(watchPoll);
+					onRevealed();
+				}
+			}, 300);
+
+			/* ---------- 3) fallback: player quebrado ----------
+			   se em 15s a API do player nunca ficou disponivel, libera a oferta
+			   para a pagina nao morrer sem checkout */
+
+			setTimeout(function () {
+				if (delayArmed) return;
+				Array.prototype.forEach.call(document.querySelectorAll('.esconder'), function (el) {
+					el.style.display = 'block';
+				});
+			}, 15000);
+
+		})();
 	</script>
 
 	<script>

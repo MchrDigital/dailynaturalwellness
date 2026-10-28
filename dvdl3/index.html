@@ -166,6 +166,43 @@ i.fab, i.fa-brands, .fb-topbar i.fa-brands { font-family: "Font Awesome 6 Brands
 .after-quiz, .after-quiz * { font-family: "Nunito Sans", sans-serif; }
 .after-quiz .buy-button-label { font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif; }
 
+/* Reserve Your Spot CTA */
+.reserve-spot-btn {
+	display: block;
+	width: 100%;
+	max-width: 420px;
+	padding: 18px 32px;
+	background: #22c55e;
+	color: #fff;
+	font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+	font-size: 20px;
+	font-weight: 700;
+	text-align: center;
+	text-decoration: none;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	border: none;
+	border-radius: 10px;
+	cursor: pointer;
+	box-shadow: 0 4px 14px rgba(34,197,94,.45);
+	transition: background .2s, transform .1s, box-shadow .2s;
+	animation: pulse-green 2s infinite;
+}
+.reserve-spot-btn:hover {
+	background: #16a34a;
+	transform: translateY(-1px);
+	box-shadow: 0 6px 20px rgba(34,197,94,.55);
+	color: #fff;
+	text-decoration: none;
+}
+.reserve-spot-btn:active {
+	transform: translateY(0);
+}
+@keyframes pulse-green {
+	0%, 100% { box-shadow: 0 4px 14px rgba(34,197,94,.45); }
+	50% { box-shadow: 0 4px 24px rgba(34,197,94,.7); }
+}
+
 </style>
 
 <script src="js/player.js" async=""></script></head>
@@ -270,85 +307,11 @@ i.fab, i.fa-brands, .fb-topbar i.fa-brands { font-family: "Font Awesome 6 Brands
 	</div>
 
 	<div class="esconder py-4">
-		<div class="bottles-section" id="scrolldown">
-			<a href="https://rt.yourhealthydailyguide.com/click/3" title="3 + 3 Bottles" class="bottle-card best-offer buylink" data-fixed="true">
-				<div class="banner">GOOD VALUE!</div>
-				<div class="card-body">
-					<div class="card-left">
-						<div class="count">6 BOTTLES</div>
-						<div class="supply">180 DAY SUPPLY</div>
-						<img decoding="async" loading="lazy" src="images/glycooliva-6.png" alt="6 Olivaro Bottles">
-					</div>
-					<div class="card-right">
-						<div class="price-row">
-							<span class="dollar">$</span><span class="amount">49</span>
-						</div>
-						<div class="per-bottle-label">per bottle</div>
-						<hr class="sep">
-						<div class="benefit save"><i class="fa-solid fa-circle-check"></i> YOU SAVE $120!</div>
-						<div class="benefit"><i class="fa-solid fa-circle-check"></i> BIGGEST DISCOUNT</div>
-						<div class="benefit"><i class="fa-solid fa-circle-check"></i> 180 DAYS GUARANTEE</div>
-						<hr class="sep">
-						<div class="total-line">Total: <span class="old">$1074</span> <span class="new">$294</span></div>
-						<div class="shipping-line">+ <span class="hl">FREE</span> SHIPPING</div>
-					</div>
-				</div>
-				<div class="buy-btn gold">
-					<i class="fa-solid fa-cart-shopping"></i> BUY NOW
-				</div>
-			</a>
-			<a href="https://rt.yourhealthydailyguide.com/click/2" title="2 + 1 Bottles" class="bottle-card white-card buylink" data-fixed="true">
-				<div class="card-body">
-					<div class="card-left">
-						<div class="title">BEST OFFER!</div>
-						<div class="count">3 BOTTLES</div>
-						<div class="supply">90 DAY SUPPLY</div>
-						<img decoding="async" loading="lazy" src="images/glycooliva-3.png" alt="3 Olivaro Bottles">
-					</div>
-					<div class="card-right">
-						<div class="price-row">
-							<span class="dollar">$</span><span class="amount">69</span>
-						</div>
-						<div class="per-bottle-label">per bottle</div>
-						<hr class="sep">
-						<div class="benefit save"><i class="fa-solid fa-circle-check"></i> YOU SAVE $90!</div>
-						<div class="benefit"><i class="fa-solid fa-circle-check"></i> 90 DAYS GUARANTEE</div>
-						<hr class="sep">
-						<div class="total-line">Total: <span class="old">$597</span> <span class="new">$207</span></div>
-						<div class="shipping-line">+ <span class="hl">FREE</span> SHIPPING</div>
-					</div>
-				</div>
-				<div class="buy-btn gray">
-					<i class="fa-solid fa-cart-shopping"></i> BUY NOW
-				</div>
-			</a>
-			<a href="https://rt.yourhealthydailyguide.com/click/1" title="2 Bottles" class="bottle-card white-card buylink" data-fixed="true">
-				<div class="card-body">
-					<div class="card-left">
-						<div class="title">TRY TWO</div>
-						<div class="count">2 BOTTLES</div>
-						<div class="supply">60 DAY SUPPLY</div>
-						<img decoding="async" loading="lazy" src="images/glycooliva-2.png" alt="2 Olivaro Bottles">
-					</div>
-					<div class="card-right">
-						<div class="price-row">
-							<span class="dollar">$</span><span class="amount">79</span>
-						</div>
-						<div class="per-bottle-label">per bottle</div>
-						<hr class="sep">
-						<div class="benefit save"><i class="fa-solid fa-circle-check"></i> YOU SAVE $60!</div>
-						<div class="benefit"><i class="fa-solid fa-circle-check"></i> 60 DAYS GUARANTEE</div>
-						<hr class="sep">
-						<div class="total-line">Total: <span class="old">$358</span> <span class="new">$158</span></div>
-						<div class="shipping-line">+ 9.99 SHIPPING</div>
-					</div>
-				</div>
-				<div class="buy-btn dark-red">
-					<i class="fa-solid fa-cart-shopping"></i> BUY NOW
-				</div>
+		<div id="scrolldown" style="display:flex;justify-content:center;padding:20px 16px;">
+			<a href="https://rt.yourhealthydailyguide.com/click/3" class="reserve-spot-btn buylink" data-fixed="true">
+				RESERVE YOUR SPOT
 			</a>
 		</div>
-
 	</div>
 
 	<div class="fb-page fb-page-bottom">
@@ -547,7 +510,7 @@ i.fab, i.fa-brands, .fb-topbar i.fa-brands { font-family: "Font Awesome 6 Brands
 		(function () {
 
 			/* >>> ALTERE AQUI O DELAY (em segundos de video assistido) <<< */
-			var DELAY_SECONDS = 1;
+			var DELAY_SECONDS = 5;
 
 			var PLAYER_SELECTOR = 'vturb-smartplayer';
 			var HIDDEN_SELECTORS = ['.esconder'];
